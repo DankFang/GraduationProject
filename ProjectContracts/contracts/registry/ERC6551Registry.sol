@@ -8,9 +8,9 @@ import "./interfaces/IERC6551Registry.sol";
 contract SampleAccountRegistry is IERC6551Registry {
     error InitializationFailed(); 
 /* 
-ERC-1167 Header               (10 bytes)
+ERC-1167 Header               (10 bytes)    363d3d373d3d3d363d73
 <implementation (address)>    (20 bytes)
-ERC-1167 Footer               (15 bytes)
+ERC-1167 Footer               (15 bytes)    5af43d82803e903d91602b57fd5bf3
 <salt (uint256)>              (32 bytes)
 <chainId (uint256)>           (32 bytes)
 <tokenContract (address)>     (32 bytes)
