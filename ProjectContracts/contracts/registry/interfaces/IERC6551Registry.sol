@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 /**
  * @title The ERC-6551 Registry Interface
- * @author Ichior
+ * @author DankFang
  * @dev The registry contract must implement this interface
  */
 interface IERC6551Registry {
