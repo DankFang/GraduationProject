@@ -35,7 +35,7 @@ import {calldataKeccak} from "../core/Helpers.sol";
     }
 
 /**
- * Utility functions helpful when working with UserOperation structs.
+ * 当遇到使用UserOperation structs时需要用到的帮助函数
  */
 library UserOperationLib {
 
@@ -46,14 +46,14 @@ library UserOperationLib {
         return address(uint160(data));
     }
 
-    //relayer/block builder might submit the TX with higher priorityFee, but the user should not
-    // pay above what he signed for.
+    // relayer/block builder可能会提交具有更高优先级费用的交易，但用户不应该这样做
+    // 支付高于他签名的费用
     function gasPrice(UserOperation calldata userOp) internal view returns (uint256) {
     unchecked {
         uint256 maxFeePerGas = userOp.maxFeePerGas;
         uint256 maxPriorityFeePerGas = userOp.maxPriorityFeePerGas;
         if (maxFeePerGas == maxPriorityFeePerGas) {
-            //legacy mode (for networks that don't support basefee opcode)
+            //legacy mode 传统模式（适用于不支持 basefee 操作码的网络）
             return maxFeePerGas;
         }
         return min(maxFeePerGas, maxPriorityFeePerGas + block.basefee);
