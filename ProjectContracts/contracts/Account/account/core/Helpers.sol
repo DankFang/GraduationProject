@@ -68,7 +68,7 @@ pragma solidity ^0.8.12;
 
 /**
  * keccak function over calldata.
- * keccak calldata上的数据的函数.
+ * keccak calldata上的数据的函数.即对calldata的数据进行keccak加密操作
  * @dev 复制 calldata到 memory, keccak加密并且下沉到分配的 memory. 这比solidity语法更高效
  */
     function calldataKeccak(bytes calldata data) pure returns (bytes32 ret) {
