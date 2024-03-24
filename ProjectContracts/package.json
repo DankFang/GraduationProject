@@ -18,6 +18,8 @@
     "hardhat-deploy": "^0.11.24"
   },
   "dependencies": {
+    "hardhat-deploy-ethers": "^0.4.1",
+    "hardhat-storage-layout-changes": "^0.1.2",
     "hardtron": "^0.1.6"
   }
 }
