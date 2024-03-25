@@ -20,5 +20,9 @@
 - 最终实现NFT的分类管理
 
 ### 合约地址：
-- AccountGuardian: 0x88dc8e1e8c2b246ddcfcd6623da7c5bda5195afd
+#### AccountGuardian
+- 0x88dc8e1e8c2b246ddcfcd6623da7c5bda5195afd
+#### Account
+- Proxy: 0x93C3bB06327C27a27fB1387D21b97aCBd9380B55
+- Implementation: 0x34163063b59C22281Ab101e771a8Aa7b3a4C33b6
 
