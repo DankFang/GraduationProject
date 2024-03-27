@@ -2,15 +2,14 @@
 pragma solidity ^0.8.12;
 
 /**
- * helper contract for EntryPoint, to call userOp.initCode from a "neutral" address,
- * which is explicitly not the entryPoint itself.
+ * EntryPoint 的辅助合约，从“neutral”地址调用 userOp.initCode，该地址显然不是 EntryPoint 本身。
  */
 contract SenderCreator {
 
     /**
      * call the "initCode" factory to create and return the sender account address
-     * @param initCode the initCode value from a UserOp. contains 20 bytes of factory address, followed by calldata
-     * @return sender the returned address of the created account, or zero address on failure.
+     * @param initCode来自 UserOp 的 initCode 值。 包含 20 个字节的factory地址，后面是 calldata
+     * @return sender 创建帐户的返回地址，或失败时返回零地址。
      */
     function createSender(bytes calldata initCode) external returns (address sender) {
         address factory = address(bytes20(initCode[0 : 20]));

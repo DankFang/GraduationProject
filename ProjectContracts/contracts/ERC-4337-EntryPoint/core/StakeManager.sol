@@ -53,7 +53,7 @@ abstract contract StakeManager is IStakeManager {
     }
 
     /**
-     * add to the account's stake - amount and delay
+     * add to the account's stake - amount and delay     delay：延迟
      * any pending unstake is first cancelled.
      * @param unstakeDelaySec the new lock duration before the deposit can be withdrawn.
      */

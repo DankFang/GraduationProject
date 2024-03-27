@@ -4,10 +4,10 @@ pragma solidity ^0.8.12;
 /* solhint-disable no-inline-assembly */
 
 /**
- * returned data from validateUserOp.
- * validateUserOp returns a uint256, with is created by `_packedValidationData` and parsed by `_parseValidationData`
- * @param aggregator - address(0) - the account validated the signature by itself.
- *              address(1) - the account failed to validate the signature.
+ * 从 validateUserOp 返回的数据。
+ * validateUserOp 返回一个 uint256，由 _packedValidationData 创建并由 _parseValidationData 解析
+ * @param aggregator - address(0) - 这个帐户自行验证签名。
+ *              address(1) - 该帐户无法验证签名。
  *              otherwise - this is an address of a signature aggregator that must be used to validate the signature.
  * @param validAfter - this UserOp is valid only after this timestamp.
  * @param validaUntil - this UserOp is valid only up to this timestamp.
@@ -18,7 +18,7 @@ pragma solidity ^0.8.12;
         uint48 validUntil;
     }
 
-//extract sigFailed, validAfter, validUntil.
+// 提取 sigFailed, validAfter, validUntil.
 // also convert zero validUntil to type(uint48).max
     function _parseValidationData(uint validationData) pure returns (ValidationData memory data) {
         address aggregator = address(uint160(validationData));
@@ -30,7 +30,7 @@ pragma solidity ^0.8.12;
         return ValidationData(aggregator, validAfter, validUntil);
     }
 
-// intersect account and paymaster ranges.
+// 在account 和 paymaster 的范围内交互.
     function _intersectTimeRange(uint256 validationData, uint256 paymasterValidationData) pure returns (ValidationData memory) {
         ValidationData memory accountValidationData = _parseValidationData(validationData);
         ValidationData memory pmValidationData = _parseValidationData(paymasterValidationData);
@@ -59,7 +59,7 @@ pragma solidity ^0.8.12;
 /**
  * helper to pack the return value for validateUserOp, when not using an aggregator
  * @param sigFailed - true for signature failure, false for success
- * @param validUntil last timestamp this UserOperation is valid (or zero for infinite)
+ * @param validUntil last timestamp this UserOperation is valid (or zero for infinite)   infinite:无穷
  * @param validAfter first timestamp this UserOperation is valid
  */
     function _packValidationData(bool sigFailed, uint48 validUntil, uint48 validAfter) pure returns (uint256) {

@@ -17,7 +17,7 @@ import {calldataKeccak} from "./Helpers.sol";
      * @param maxFeePerGas same as EIP-1559 gas parameter.
      * @param maxPriorityFeePerGas same as EIP-1559 gas parameter.
      * @param paymasterAndData if set, this field holds the paymaster address and paymaster-specific data. the paymaster will pay for the transaction instead of the sender.
-     * @param signature sender-verified signature over the entire request, the EntryPoint address and the chain ID.
+     * @param signature sender-verified signature over the entire request, the EntryPoint address and the chain ID.   entire：全部的
      */
     struct UserOperation {
 
@@ -46,8 +46,7 @@ library UserOperationLib {
         return address(uint160(data));
     }
 
-    //relayer/block builder might submit the TX with higher priorityFee, but the user should not
-    // pay above what he signed for.
+    //relayer/block builder 可能会提交具有更高优先级费用的 TX，但用户不应支付高于其签名费用的费用。
     function gasPrice(UserOperation calldata userOp) internal view returns (uint256) {
     unchecked {
         uint256 maxFeePerGas = userOp.maxFeePerGas;
