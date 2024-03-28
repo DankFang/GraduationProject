@@ -17,13 +17,13 @@ import "./INonceManager.sol";
 interface IEntryPoint is IStakeManager, INonceManager {
 
     /***
-     * An event emitted after each successful request
-     * @param userOpHash - unique identifier for the request (hash its entire content, except signature).
-     * @param sender - the account that generates this request.
-     * @param paymaster - if non-null, the paymaster that pays for this request.
+     * 每个成功请求后发出的事件
+     * @param userOpHash - unique identifier for the request (hash its entire/全部的 content, except signature).
+     * @param sender - the account that generates/产生 this request.
+     * @param paymaster - if non-null/非空, the paymaster that pays for this request.
      * @param nonce - the nonce value from the request.
      * @param success - true if the sender transaction succeeded, false if reverted.
-     * @param actualGasCost - actual amount paid (by account or paymaster) for this UserOperation.
+     * @param actualGasCost - actual/实际的 amount paid (by account or paymaster) for this UserOperation.
      * @param actualGasUsed - total gas used by this UserOperation (including preVerification, creation, validation and execution).
      */
     event UserOperationEvent(bytes32 indexed userOpHash, address indexed sender, address indexed paymaster, uint256 nonce, bool success, uint256 actualGasCost, uint256 actualGasUsed);
@@ -39,7 +39,7 @@ interface IEntryPoint is IStakeManager, INonceManager {
 
     /**
      * An event emitted if the UserOperation "callData" reverted with non-zero length
-     * @param userOpHash the request unique identifier.
+     * @param userOpHash request/请求唯一标识符
      * @param sender the sender of this request
      * @param nonce the nonce used in the request
      * @param revertReason - the return bytes from the (reverted) call to "callData".
@@ -47,8 +47,8 @@ interface IEntryPoint is IStakeManager, INonceManager {
     event UserOperationRevertReason(bytes32 indexed userOpHash, address indexed sender, uint256 nonce, bytes revertReason);
 
     /**
-     * an event emitted by handleOps(), before starting the execution loop.
-     * any event emitted before this event, is part of the validation.
+     * an event emitted by handleOps(), before starting the execution loop/循环.
+     * 在此事件之前发出的任何事件都是验证的一部分
      */
     event BeforeExecution();
 
@@ -58,14 +58,14 @@ interface IEntryPoint is IStakeManager, INonceManager {
     event SignatureAggregatorChanged(address indexed aggregator);
 
     /**
-     * a custom revert error of handleOps, to identify the offending op.
-     *  NOTE: if simulateValidation passes successfully, there should be no reason for handleOps to fail on it.
+     * handleOps 的自定义恢复错误，用于识别有问题的操作
+     *  NOTE: 如果simulateValidation 成功通过，则handleOps 应该没有理由失败
      *  @param opIndex - index into the array of ops to the failed one (in simulateValidation, this is always zero)
      *  @param reason - revert reason
      *      The string starts with a unique code "AAmn", where "m" is "1" for factory, "2" for account and "3" for paymaster issues,
-     *      so a failure can be attributed to the correct entity.
-     *   Should be caught in off-chain handleOps simulation and not happen on-chain.
-     *   Useful for mitigating DoS attempts against batchers or for troubleshooting of factory/account/paymaster reverts.
+     *      so a failure can be attributed to the correct entity. 因此失败可以归因于正确的实体
+     *   应该在链下handleOps模拟中捕获，而不是在链上发生
+     *   对于减少针对批量处理程序的 DoS 尝试或对factory/account/paymaster的 reverts进行故障排除非常有用
      */
     error FailedOp(uint256 opIndex, string reason);
 
@@ -75,11 +75,11 @@ interface IEntryPoint is IStakeManager, INonceManager {
     error SignatureValidationFailed(address aggregator);
 
     /**
-     * Successful result from simulateValidation.
+     * Successful result from simulateValidation.  simulate：模拟
      * @param returnInfo gas and time-range returned values
      * @param senderInfo stake information about the sender
-     * @param factoryInfo stake information about the factory (if any)
-     * @param paymasterInfo stake information about the paymaster (if any)
+     * @param factoryInfo stake information about the factory (if any) 
+     * @param paymasterInfo stake information about the paymaster (if any / 如果有)
      */
     error ValidationResult(ReturnInfo returnInfo,
         StakeInfo senderInfo, StakeInfo factoryInfo, StakeInfo paymasterInfo);
@@ -91,7 +91,7 @@ interface IEntryPoint is IStakeManager, INonceManager {
      * @param factoryInfo stake information about the factory (if any)
      * @param paymasterInfo stake information about the paymaster (if any)
      * @param aggregatorInfo signature aggregation info (if the account requires signature aggregator)
-     *      bundler MUST use it to verify the signature, or reject the UserOperation
+     *      bundler 必须使用它来验证签名signature，或者拒绝 UserOperation 
      */
     error ValidationResultWithAggregation(ReturnInfo returnInfo,
         StakeInfo senderInfo, StakeInfo factoryInfo, StakeInfo paymasterInfo,
@@ -103,11 +103,11 @@ interface IEntryPoint is IStakeManager, INonceManager {
     error SenderAddressResult(address sender);
 
     /**
-     * return value of simulateHandleOp
+     * return value of simulateHandleOp   simulate：模拟
      */
     error ExecutionResult(uint256 preOpGas, uint256 paid, uint48 validAfter, uint48 validUntil, bool targetSuccess, bytes targetResult);
 
-    //UserOps handled, per aggregator
+    //UserOps handled, per aggregator     handled：处理
     struct UserOpsPerAggregator {
         UserOperation[] userOps;
 
@@ -118,10 +118,9 @@ interface IEntryPoint is IStakeManager, INonceManager {
     }
 
     /**
-     * Execute a batch of UserOperation.
+     * 批量处理 UserOperation.
      * no signature aggregator is used.
-     * if any account requires an aggregator (that is, it returned an aggregator when
-     * performing simulateValidation), then handleAggregatedOps() must be used instead.
+     * 如果任何账户需要aggregator（即在执行simulateValidation时返回aggregator），则必须使用handleAggreatedOps()
      * @param ops the operations to execute
      * @param beneficiary the address to receive the fees
      */
@@ -139,22 +138,22 @@ interface IEntryPoint is IStakeManager, INonceManager {
 
     /**
      * generate a request Id - unique identifier for this request.
-     * the request ID is a hash over the content of the userOp (except the signature), the entrypoint and the chainid.
+     * 请求 ID 是 userOp 内容（签名除外）、entrypoint 和 chainid 的哈希值。
      */
     function getUserOpHash(UserOperation calldata userOp) external view returns (bytes32);
 
     /**
-     * Simulate a call to account.validateUserOp and paymaster.validatePaymasterUserOp.
-     * @dev this method always revert. Successful result is ValidationResult error. other errors are failures.
-     * @dev The node must also verify it doesn't use banned opcodes, and that it doesn't reference storage outside the account's data.
+     * 模拟对 account.validateUserOp 和 paymaster.validatePaymasterUserOp 的调用
+     * @dev 这个方法总是会revert。 成功的结果是 ValidationResult 错误 其他错误都是失败。
+     * @dev The node must also verify it doesn't use banned opcodes, and that it doesn't reference/参考 storage outside the account's data.
      * @param userOp the user operation to validate.
      */
     function simulateValidation(UserOperation calldata userOp) external;
 
     /**
-     * gas and return values during simulation
+     * gas and return values during simulation/模拟
      * @param preOpGas the gas used for validation (including preValidationGas)
-     * @param prefund the required prefund for this operation
+     * @param prefund the required prefund/预付款 for this operation
      * @param sigFailed validateUserOp's (or paymaster's) signature check failed
      * @param validAfter - first timestamp this UserOp is valid (merging account and paymaster time-range)
      * @param validUntil - last timestamp this UserOp is valid (merging account and paymaster time-range)
@@ -179,8 +178,8 @@ interface IEntryPoint is IStakeManager, INonceManager {
     }
 
     /**
-     * Get counterfactual sender address.
-     *  Calculate the sender contract address that will be generated by the initCode and salt in the UserOperation.
+     * Get counterfactual sender address. 获取反事实的发件人地址。
+     *  计算将由 UserOperation 中的 initCode 和 salt 生成的sender合约地址。
      * this method always revert, and returns the address in SenderAddressResult error
      * @param initCode the constructor code to be passed into the UserOperation.
      */
@@ -190,15 +189,13 @@ interface IEntryPoint is IStakeManager, INonceManager {
     /**
      * simulate full execution of a UserOperation (including both validation and target execution)
      * this method will always revert with "ExecutionResult".
-     * it performs full validation of the UserOperation, but ignores signature error.
-     * an optional target address is called after the userop succeeds, and its value is returned
-     * (before the entire call is reverted)
-     * Note that in order to collect the the success/failure of the target call, it must be executed
-     * with trace enabled to track the emitted events.
+     * 它执行 UserOperation 的完整验证，但忽略签名错误。
+     * userop成功后调用一个可选的目标地址，并返回其值
+     * (在整个call reverted之前)
+     * 请注意，为了收集目标调用的成功/失败，必须在启用跟踪的情况下执行以跟踪发出的事件。
      * @param op the UserOperation to simulate
-     * @param target if nonzero, a target address to call after userop simulation. If called, the targetSuccess and targetResult
-     *        are set to the return from that call.
-     * @param targetCallData callData to pass to target address
+     * @param target 如果非零，则为用户操作模拟后调用的目标地址。 如果调用，则 targetSuccess 和 targetResult 将设置为该调用的返回值。
+     * @param targetCallData 传递到目标地址的callData
      */
     function simulateHandleOp(UserOperation calldata op, address target, bytes calldata targetCallData) external;
 }
