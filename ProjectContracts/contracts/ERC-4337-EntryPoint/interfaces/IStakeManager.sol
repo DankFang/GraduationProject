@@ -4,7 +4,7 @@ pragma solidity ^0.8.12;
 /**
  * manage deposits and stakes.
  * deposit is just a balance used to pay for UserOperations (either by a paymaster or an account)
- * stake is value locked for at least "unstakeDelay" by the staked entity.
+ * stake is value locked for at least "unstakeDelay" by the staked entity/实体.
  */
 interface IStakeManager {
 
@@ -19,14 +19,14 @@ interface IStakeManager {
         uint256 amount
     );
 
-    /// Emitted when stake or unstake delay are modified
+    /// Emitted when stake or unstake delay/延迟 are modified/修改的
     event StakeLocked(
         address indexed account,
         uint256 totalStaked,
         uint256 unstakeDelaySec
     );
 
-    /// Emitted once a stake is scheduled for withdrawal
+    /// Emitted once a stake is scheduled/预定的 for withdrawal
     event StakeUnlocked(
         address indexed account,
         uint256 withdrawTime
@@ -83,7 +83,7 @@ interface IStakeManager {
     function addStake(uint32 _unstakeDelaySec) external payable;
 
     /**
-     * attempt to unlock the stake.
+     * attempt/试图 to unlock the stake.
      * the value can be withdrawn (using withdrawStake) after the unstake delay.
      */
     function unlockStake() external;
