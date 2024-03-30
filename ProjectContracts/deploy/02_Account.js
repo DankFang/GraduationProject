@@ -11,7 +11,13 @@ module.exports = async ({getNamedAccounts, deployments, getChainId}) => {
     const chainId = await getChainId();
     init(accounts);
 
-    const {ERC4337EntryPointAddr, AccountGuardianAddr} = await accounts.getParam(chainId)
+    let {ERC4337EntryPointAddr} = await accounts.getParam(chainId)
+    if (chainId == 31337) {
+        ERC4337EntryPointAddr = (await getContract(chainId, "EntryPoint")).target
+    }
+    let AccountGuardianAddr = (await getContract(chainId, "AccountGuardian")).target
+    console.log("AccountGuardianAddr",AccountGuardianAddr);
+
     await deploy('Account', {
         contract: 'Account',
         from: deployer,
