@@ -11,4 +11,8 @@ module.exports = {
       url: process.env.ALCHEMY_API_KEY_Sepolia,
       accounts: [process.env.PRIVATE_KEY]
     },
+    Mumbai: {
+      url: process.env.ALCHEMY_API_KEY_Mumbai,
+      accounts: [process.env.PRIVATE_KEY]
+    },
 }
