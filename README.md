@@ -27,6 +27,8 @@
 - Implementation: 0xb21af3Cef2466d194e770d89A0aeB4cf8672e5F1
 #### pocketNFT
 - 0xCD37cDfFddBaa184d293Ab94c86fd6040B37c73A
+#### ERC6551Registry
+- 0xbB0905bDEd1152db45392c0212f887411a002061
 
 ### Mumbai 合约地址：
 #### AccountGuardian
@@ -36,4 +38,6 @@
 - Implementation: 0x5ad03CA4db62f13070369638Ce5fA2AE6876F824
 #### pocketNFT
 - 0xA59FE4A9c512ef100A5Caae4fCEE1F04aed9370c
+#### ERC6551Registry
+- 0x6f115E579AEeb6409693FE25b8CcfeE2Ba3F02B2
 

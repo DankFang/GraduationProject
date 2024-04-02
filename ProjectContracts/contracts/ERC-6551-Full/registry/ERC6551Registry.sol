@@ -5,7 +5,7 @@ import "./libraries/Create2.sol";
 
 import "./interfaces/IERC6551Registry.sol";
 
-contract SampleAccountRegistry is IERC6551Registry {
+contract ERC6551Registry is IERC6551Registry {
     error InitializationFailed(); 
 /* 
 ERC-1167 Header               (10 bytes)    363d3d373d3d3d363d73
