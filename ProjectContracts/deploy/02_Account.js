@@ -11,17 +11,19 @@ module.exports = async ({getNamedAccounts, deployments, getChainId}) => {
     const chainId = await getChainId();
     init(accounts);
 
-    let {ERC4337EntryPointAddr} = await accounts.getParam(chainId)
+    let EntryPointAddr
     if (chainId == 31337) {
-        ERC4337EntryPointAddr = (await getContract(chainId, "EntryPoint")).target
+        EntryPointAddr = (await ethers.getContract("EntryPoint")).target
+    } else {
+        let {ERC4337EntryPointAddr} = await accounts.getParam(chainId)
+        EntryPointAddr = ERC4337EntryPointAddr
     }
     let AccountGuardianAddr = (await getContract(chainId, "AccountGuardian")).target
-    console.log("AccountGuardianAddr",AccountGuardianAddr);
 
     await deploy('Account', {
         contract: 'Account',
         from: deployer,
-        args: [ERC4337EntryPointAddr, AccountGuardianAddr],
+        args: [EntryPointAddr, AccountGuardianAddr],
         proxy: {
             proxyContract: 'UUPS',
             // execute: {
@@ -35,5 +37,6 @@ module.exports = async ({getNamedAccounts, deployments, getChainId}) => {
         },
         log: true,
     });
+    const Account = await ethers.getContract("Account")
 };
 module.exports.tags = ['Account'];

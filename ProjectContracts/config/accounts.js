@@ -4,6 +4,9 @@ const PARAMS = {
     },
     80001: {
         ERC4337EntryPointAddr : '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789'
+    },
+    31337: {
+        ERC4337EntryPointAddr : '0x5FbDB2315678afecb367f032d93F642f64180aa3'
     }
 }
 

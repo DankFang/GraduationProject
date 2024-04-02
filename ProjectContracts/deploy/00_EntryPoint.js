@@ -8,7 +8,7 @@ module.exports = async ({getNamedAccounts, deployments, getChainId}) => {
     const {deploy} = deployments;
     const {deployer} = await getNamedAccounts();
     const chainId = await getChainId();
-    init(accounts);
+    // init(accounts);
 
     if (await chainId != 31337) return;
 
@@ -18,5 +18,6 @@ module.exports = async ({getNamedAccounts, deployments, getChainId}) => {
         args: [],
         log: true,
     });
+    const EntryPoint = await ethers.getContract("EntryPoint");
 };
 module.exports.tags = ['EntryPoint'];
