@@ -60,7 +60,7 @@ describe("ERC-6551Account Test", function() {
             pocketNFT.target,
             1,
             6551,
-            "0x6faff5f1"
+            "0x8129fc1c"
         )
         expect(createdAccount).to.be.equal(prepareAccount)
         // 现在正式生成地址

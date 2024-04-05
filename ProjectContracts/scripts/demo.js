@@ -29,15 +29,24 @@ const { parseEther, formatEther, hexValue } = ethers;
 
     // 即proxy 
     // console.log("account",Account.target);
-    // const prepareAccount = await ERC6551Registry.account(
-    //     '0xFC1441A6F06026b499E2990f7Cd44e87be4B50d7',
-    //     chainId,
-    //     pocketNFT.target,
-    //     1,
-    //     '0x6551655165516551655165516551655165516551655165516551655165516551'
-    // )
-    // // 
-    // console.log("prepareAccount", prepareAccount);
+    const res = await ERC6551Registry.createAccount.staticCall(
+        '0xA477e898B403f00cB41f760D83282fb20545Edc5',  // Account的proxy
+        chainId,
+        pocketNFT.target,  // 需要绑定的NFT的地址
+        1,
+        0,
+        "0x8129fc1c",
+    )
+    console.log(res);
+    const prepareAccount = await ERC6551Registry.account(
+        '0xA477e898B403f00cB41f760D83282fb20545Edc5',  // Account的proxy
+        chainId,
+        pocketNFT.target,  // 需要绑定的NFT的地址
+        1,
+        0,  //salt
+    )
+    // 
+    console.log("prepareAccount", prepareAccount);
     // const Accountcontract = await ethers.getContractAt('Account', '0xebdad32971924f9648e05e6d6b18f121d5adf0fe');
 
 //     // await deployer.sendTransaction({
