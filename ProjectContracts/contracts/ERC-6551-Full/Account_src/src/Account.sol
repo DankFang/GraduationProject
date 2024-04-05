@@ -2,8 +2,8 @@
 pragma solidity ^0.8.13;
 
 import "./interfaces/IERC6551Account.sol";
-import "./library/ERC6551AccountLib.sol";
- 
+import "./lib/ERC6551AccountLib.sol";
+
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -13,7 +13,7 @@ import "@openzeppelin/contracts/interfaces/IERC1271.sol";
 import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
-import {BaseAccount as BaseERC4337Account, IEntryPoint, UserOperation} from "./base/BaseAccount.sol"; 
+import {BaseAccount as BaseERC4337Account, IEntryPoint, UserOperation} from "./accountBase/account/base/BaseAccount.sol";
 
 import "./interfaces/IAccountGuardian.sol";
 
@@ -25,7 +25,7 @@ error UntrustedImplementation();
 error OwnershipCycle();
 
 /**
- * @title 一个单一的合约地址只被唯一一个ERC721代币拥有
+ * @title A smart contract account owned by a single ERC721 token
  */
 contract Account is
     IERC165,
@@ -44,13 +44,13 @@ contract Account is
     /// @dev AccountGuardian contract address
     address public immutable guardian;
 
-    /// @dev 该帐户将被解锁的时间戳
+    /// @dev timestamp at which this account will be unlocked
     uint256 public lockedUntil;
 
-    /// @dev owner => 函数选择器 => 实现.  在调用特定选择器的函数时,可转发到特定实现地址的低级call调用
+    /// @dev mapping from owner => selector => implementation
     mapping(address => mapping(bytes4 => address)) public overrides;
 
-    /// @dev mapping from owner => caller => has permissions  (owner是否给caller授权)
+    /// @dev mapping from owner => caller => has permissions
     mapping(address => mapping(address => bool)) public permissions;
 
     event OverrideUpdated(
@@ -94,16 +94,12 @@ contract Account is
         _handleOverride();
     }
 
-    /// @dev 允许帐户所有者通过override向帐户添加其他功能
+    /// @dev allows account owner to add additional functions to the account via an override
     fallback() external payable {
         _handleOverride();
     }
 
-    /**
-     * @dev 如果调用者被授权call,则对帐户执行低级调用
-     * @param value 转账ETH的数量
-     * @param to 要调用的目标合约地址
-     */
+    /// @dev executes a low-level call against an account if the caller is authorized to make calls
     function executeCall(
         address to,
         uint256 value,
@@ -116,7 +112,7 @@ contract Account is
         return _call(to, value, data);
     }
 
-    /// @dev 为给定的函数调用设置实现地址
+    /// @dev sets the implementation address for a given function call
     function setOverrides(
         bytes4[] calldata selectors,
         address[] calldata implementations
@@ -125,8 +121,7 @@ contract Account is
         if (msg.sender != _owner) revert NotAuthorized();
 
         uint256 length = selectors.length;
-        
-        // 实现地址implementations数组的长度等于selectors数组的长度
+
         if (implementations.length != length) revert InvalidInput();
 
         for (uint256 i = 0; i < length; i++) {
@@ -137,7 +132,7 @@ contract Account is
         _incrementNonce();
     }
 
-    /// @dev 给caller授权执行权限
+    /// @dev grants a given caller execution permissions
     function setPermissions(
         address[] calldata callers,
         bool[] calldata _permissions
@@ -157,9 +152,8 @@ contract Account is
         _incrementNonce();
     }
 
-    /// @dev 锁定账户直到特定时间
+    /// @dev locks the account until a certain timestamp
     function lock(uint256 _lockedUntil) external onlyOwner onlyUnlocked {
-        // 最多锁定一年
         if (_lockedUntil > block.timestamp + 365 days)
             revert ExceedsMaxLockTime();
 
@@ -170,14 +164,13 @@ contract Account is
         _incrementNonce();
     }
 
-    /// @dev 返回此账户是否被锁定(bool)
+    /// @dev returns the current lock status of the account as a boolean
     function isLocked() public view returns (bool) {
         return lockedUntil > block.timestamp;
     }
 
-    /// @dev EIP-1271 签名验证. 默认情况下, 只有该帐户的所有者被允许签名.
-    /// @dev EIP-1271,合约的标准签名验证方法,当账户是智能合约时验证签名的标准方法. 只有当签名者被授权代表智能钱包执行给定操作时,签名的操作消息才有效
-    // 这个函数可以被 override 重写.
+    /// @dev EIP-1271 signature validation. By default, only the owner of the account is permissioned to sign.
+    /// This function can be overriden.
     function isValidSignature(bytes32 hash, bytes memory signature)
         external
         view
@@ -198,7 +191,8 @@ contract Account is
         return "";
     }
 
-    /// @dev 返回拥有此账户的token的EIP-155 chain ID, token合约地址,以及tokenid
+    /// @dev Returns the EIP-155 chain ID, token contract address, and token ID for the token that
+    /// owns this account.
     function token()
         external
         view
@@ -211,23 +205,24 @@ contract Account is
         return ERC6551AccountLib.token();
     }
 
-    /// @dev 返回当前的合约的nonce
+    /// @dev Returns the current account nonce
     function nonce() public view override returns (uint256) {
         return IEntryPoint(_entryPoint).getNonce(address(this), 0);
     }
 
-    /// @dev 如果caller不是ERC-4337 entry point,则增加当前合约账户的nonce
+    /// @dev Increments the account nonce if the caller is not the ERC-4337 entry point
     function _incrementNonce() internal {
         if (msg.sender != _entryPoint)
             IEntryPoint(_entryPoint).incrementNonce(0);
     }
 
-    /// @dev 返回 ERC-4337 entry point 的地址
+    /// @dev Return the ERC-4337 entry point address
     function entryPoint() public view override returns (IEntryPoint) {
         return IEntryPoint(_entryPoint);
     }
 
-    /// @dev 返回拥有该帐户的 ERC-721 代币的所有者。 默认情况下,token的所有者拥有该帐户的所有权限。
+    /// @dev Returns the owner of the ERC-721 token which owns this account. By default, the owner
+    /// of the token has full permissions on the account.
     function owner() public view returns (address) {
         (
             uint256 chainId,
@@ -240,7 +235,7 @@ contract Account is
         return IERC721(tokenContract).ownerOf(tokenId);
     }
 
-    /// @dev 返回给定调用者的授权状态
+    /// @dev Returns the authorization status for a given caller
     function isAuthorized(address caller) public view returns (bool) {
         // authorize entrypoint for 4337 transactions
         if (caller == _entryPoint) return true;
@@ -252,13 +247,13 @@ contract Account is
         ) = ERC6551AccountLib.token();
         address _owner = IERC721(tokenContract).ownerOf(tokenId);
 
-        // 授权令牌所有者
+        // authorize token owner
         if (caller == _owner) return true;
 
-        // 如果所有者已授予权限,则授权调用者
+        // authorize caller if owner has granted permissions
         if (permissions[_owner][caller]) return true;
 
-        // 如果不在本链上,则授权受信任的跨链执行者
+        // authorize trusted cross-chain executors if not on native chain
         if (
             chainId != block.chainid &&
             IAccountGuardian(guardian).isTrustedExecutor(caller)
@@ -267,7 +262,8 @@ contract Account is
         return false;
     }
 
-    /// @dev 如果此帐户支持给定的 interfaceId,则返回 true。 该方法可以通过重写来扩展。
+    /// @dev Returns true if a given interfaceId is supported by this account. This method can be
+    /// extended by an override.
     function supportsInterface(bytes4 interfaceId)
         public
         view
@@ -286,7 +282,8 @@ contract Account is
         return false;
     }
 
-    /// @dev 允许接收 ERC-721 代币,只要它们不会导致所有权循环. 该函数可以被重写
+    /// @dev Allows ERC-721 tokens to be received so long as they do not cause an ownership cycle.
+    /// This function can be overriden.
     function onERC721Received(
         address,
         address,
@@ -310,7 +307,7 @@ contract Account is
         return this.onERC721Received.selector;
     }
 
-    /// @dev 允许接收 ERC-1155 代币。此功能可被overriden
+    /// @dev Allows ERC-1155 tokens to be received. This function can be overriden.
     function onERC1155Received(
         address,
         address,
@@ -323,7 +320,7 @@ contract Account is
         return this.onERC1155Received.selector;
     }
 
-    /// @dev 允许 批量 接收 ERC-1155 代币。此功能可被overriden
+    /// @dev Allows ERC-1155 token batches to be received. This function can be overriden.
     function onERC1155BatchReceived(
         address,
         address,
@@ -336,7 +333,8 @@ contract Account is
         return this.onERC1155BatchReceived.selector;
     }
 
-    /// @dev 合约升级只能由所有者执行,并且新的implementation必须被信任
+    /// @dev Contract upgrades can only be performed by the owner and the new implementation must
+    /// be trusted
     function _authorizeUpgrade(address newImplementation)
         internal
         view
@@ -349,8 +347,7 @@ contract Account is
         if (!isTrusted) revert UntrustedImplementation();
     }
 
-    /// @dev 验证一个给定 ERC-4337 操作的签名
-    /// @dev bytes4(keccak256("isValidSignature(bytes32,bytes)") = 0x1626ba7e
+    /// @dev Validates a signature for a given ERC-4337 operation
     function _validateSignature(
         UserOperation calldata userOp,
         bytes32 userOpHash
@@ -367,12 +364,7 @@ contract Account is
         return 1;
     }
 
-    /**
-     * @dev 执行低级调用
-     * @param to 要调用的目标合约地址
-     * @param value 要发送的ETH数量
-     * @param data calldata
-     */
+    /// @dev Executes a low-level call
     function _call(
         address to,
         uint256 value,
@@ -388,7 +380,7 @@ contract Account is
         }
     }
 
-    /// @dev 如果设置了override,则对implementation执行低级调用
+    /// @dev Executes a low-level call to the implementation if an override is set
     function _handleOverride() internal {
         address implementation = overrides[owner()][msg.sig];
 
@@ -400,7 +392,7 @@ contract Account is
         }
     }
 
-    /// @dev 执行低级调用:static call
+    /// @dev Executes a low-level static call
     function _callStatic(address to, bytes calldata data)
         internal
         view
@@ -416,14 +408,13 @@ contract Account is
         }
     }
 
-    /// @dev 如果设置了override,将对implementation执行static call低级调用
+    /// @dev Executes a low-level static call to the implementation if an override is set
     function _handleOverrideStatic() internal view {
         address implementation = overrides[owner()][msg.sig];
 
         if (implementation != address(0)) {
             bytes memory result = _callStatic(implementation, msg.data);
             assembly {
-                // 跳过内存里面的长度字段,然后读取result的数据部分
                 return(add(result, 32), mload(result))
             }
         }

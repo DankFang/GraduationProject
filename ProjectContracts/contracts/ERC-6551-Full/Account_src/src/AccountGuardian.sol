@@ -3,9 +3,9 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/access/Ownable2Step.sol";
 
-// @dev 管理帐户的升级和跨链执行设置
+// @dev manages upgrade and cross-chain execution settings for accounts
 contract AccountGuardian is Ownable2Step {
-    // @dev 跨链的执行者是否可信 executor => is trusted
+    // @dev mapping from cross-chain executor => is trusted
     mapping(address => bool) public isTrustedImplementation;
 
     // @dev mapping from implementation => is trusted

@@ -7,65 +7,65 @@ const { parseEther, formatEther, hexValue } = ethers;
     const pocketNFT = await ethers.getContract('pocketNFT');
     const chainId = await getChainId()
     const deployer = await ethers.getNamedSigner("deployer")
-    // for (let i = 0; i < 10; i++) {
-        
+    // for (let i = 0; i < 5; i++) {
     //     await pocketNFT.mint();
     // }
     
     // const createAccountdata = await ERC6551Registry.createAccount.populateTransaction(
-    //     '0x2D25602551487C3f3354dD80D76D54383A243358',  // Account的proxy
+    //     
+    //     '0xA477e898B403f00cB41f760D83282fb20545Edc5',  // Account的proxy
     //     chainId,
     //     pocketNFT.target,  // 需要绑定的NFT的地址
-    //     15,
+    //     1,
     //     0,
     //     "0x8129fc1c",
     //     // { gasLimit: 1000000 , gasPrice: 3000000000}
     // )
     // let createAccountTX = {
-    //     to: '0x02101dfb77fde026414827fdc604ddaf224f0921',
+    //     to: '0xf713E1bFc2a7235765C5afc668720d58024404b1', // registry
     //     data: createAccountdata.data
     // }
     // await deployer.sendTransaction(createAccountTX)
-    // console.log("res",res);
+
     // 即proxy 
     // console.log("account",Account.target);
     // const prepareAccount = await ERC6551Registry.account(
-    //     '0x5ad03CA4db62f13070369638Ce5fA2AE6876F824',
+    //     '0xFC1441A6F06026b499E2990f7Cd44e87be4B50d7',
     //     chainId,
     //     pocketNFT.target,
-    //     11,
-    //     6551
+    //     1,
+    //     '0x6551655165516551655165516551655165516551655165516551655165516551'
     // )
-    // // 0xa7c27dc71bc0447aaa4a58edca1d061c1ef2a2de
+    // // 
     // console.log("prepareAccount", prepareAccount);
-    const Accountcontract = await ethers.getContractAt('Account', '0xa7c27dc71bc0447aaa4a58edca1d061c1ef2a2de');
-;
-    // await deployer.sendTransaction({
-    //     to: '0xccEA0E52dc7291c0fbBd80d8eCCDb88168dc9987',
-    //     value: parseEther("0.1"),
+    // const Accountcontract = await ethers.getContractAt('Account', '0xebdad32971924f9648e05e6d6b18f121d5adf0fe');
+
+//     // await deployer.sendTransaction({
+//     //     to: '0xccEA0E52dc7291c0fbBd80d8eCCDb88168dc9987',
+//     //     value: parseEther("0.1"),
+//     //     gasLimit: 1000000 , gasPrice: 3000000000
+//     // });
+// 转到 6551地址
+    // await pocketNFT.safeTransferFrom('0x4ebf8d74b7f022fA729776c94a34FA2617b20E8A', '0xebdad32971924f9648e05e6d6b18f121d5adf0fe', 2);
+
+    // const transferNFT = await pocketNFT.transferFrom.populateTransaction('0xebdad32971924f9648e05e6d6b18f121d5adf0fe', '0x4ebf8d74b7f022fA729776c94a34FA2617b20E8A', 2)
+    // //                                                                       0x257c487103b236b8cbe8c21cb29da442636e7dea
+    //                                                                     //   0x9b3cb69bc49cf466e0fde8af861e322a7863a3da
+                                                                           //   0xebdad32971924f9648e05e6d6b18f121d5adf0fe
+    // const executeTX = await Accountcontract.executeCall.populateTransaction(
+    //     pocketNFT.target,
+    //     0,
+    //     transferNFT.data,
+    //     // { gasLimit: 1000000 , gasPrice: 3000000000}
+    // )
+
+    // let tx = {
+    //     to: '0xebdad32971924f9648e05e6d6b18f121d5adf0fe',
+    //     data: executeTX.data, 
     //     gasLimit: 1000000 , gasPrice: 3000000000
-    // });
-    // await pocketNFT.safeTransferFrom('0x4ebf8d74b7f022fA729776c94a34FA2617b20E8A', '0xa7c27dc71bc0447aaa4a58edca1d061c1ef2a2de', 16);
-
-    const transferNFT = await pocketNFT.transferFrom.populateTransaction('0xa7c27dc71bc0447aaa4a58edca1d061c1ef2a2de', '0x4ebf8d74b7f022fA729776c94a34FA2617b20E8A', 16)
-    
-    const executeTX = await Accountcontract.executeCall.populateTransaction(
-        pocketNFT.target,
-        0,
-        transferNFT.data,
-        // { gasLimit: 1000000 , gasPrice: 3000000000}
-    )
-
-    let tx = {
-        to: '0xa7c27dc71bc0447aaa4a58edca1d061c1ef2a2de',
-        data: executeTX.data, 
-        // gasLimit: 1000000 , gasPrice: 3000000000
-    };
-    console.log("executeTX.data", executeTX.data);
-    await deployer.sendTransaction(tx)
-
-    // const owner = await pocketNFT.ownerOf(1)
-    // console.log("owner",owner);
-
+    // };
+    // // console.log("executeTX.data", executeTX.data);
+    // await deployer.sendTransaction(tx)
+    // 现在是account的问题
     process.exit(0);
 })()
