@@ -14,5 +14,6 @@ module.exports = async ({getNamedAccounts, deployments, getChainId}) => {
         args: [],
         log: true,
     });
+    const ERC6551Registry = await ethers.getContract("ERC6551Registry")
 };
 module.exports.tags = ['ERC6551Registry'];
