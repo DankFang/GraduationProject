@@ -5,7 +5,7 @@ const { AddressZero, MaxUint256 } = require("@ethersproject/constants");
 const helpers = require("@nomicfoundation/hardhat-network-helpers");
 
 let deployer, user1, user2, user3, user4, user5
-let EntryPoint, pocketNFT, ERC6551Registry, Account
+let EntryPoint, pocketNFT, assetsNFT, ERC6551Registry, Account, AccountProxy
 let chainId
 
 async function initialFixture() {
@@ -23,16 +23,8 @@ async function initialFixture() {
     pocketNFT = await ethers.getContract("pocketNFT");
     ERC6551Registry = await ethers.getContract("ERC6551Registry")
     Account = await ethers.getContract("Account")
-    
-    // return {
-    //     deployer,
-    //     user1,
-    //     user2,
-    //     user3,
-    //     user4,
-    //     user5,
-    //     EntryPoint
-    // }
+    AccountProxy = await ethers.getContract('AccountProxy');
+    assetsNFT = await ethers.getContract('assetsNFT');
 }
 describe("ERC-6551Account Test", function() {
     before(async function () {
@@ -44,79 +36,88 @@ describe("ERC-6551Account Test", function() {
             await pocketNFT.mint();
         }
         expect(await pocketNFT.tokenID()).to.be.equal(5)
-        // 这里要传到impl是 6551Account 的proxy
-        console.log("Account.target",Account.target);
+
         const prepareAccount = await ERC6551Registry.account(
-            Account.target,
+            AccountProxy.target,  // Account的proxy
             chainId,
-            pocketNFT.target,
+            pocketNFT.target,  // 需要绑定的NFT的地址
             1,
-            6551
+            0,  //salt
         )
         // 现在create Account, 先模拟
         const createdAccount = await ERC6551Registry.createAccount.staticCall(
-            Account.target,
+            AccountProxy.target,  // Account的proxy
             chainId,
-            pocketNFT.target,
+            pocketNFT.target,  // 需要绑定的NFT的地址
             1,
-            6551,
-            "0x8129fc1c"
+            0,
+            "0x8129fc1c",
         )
         expect(createdAccount).to.be.equal(prepareAccount)
         // 现在正式生成地址
-        await expect(
-            await ERC6551Registry.createAccount(
-                    Account.target,
-                    chainId,
-                    pocketNFT.target,
-                    1,
-                    6551,
-                    "0x6faff5f1"
-            )
-        ).to.be.emit(ERC6551Registry,"AccountCreated")
+        const createAccountdata = await ERC6551Registry.createAccount.populateTransaction(
+            AccountProxy.target,  // Account的proxy
+            chainId,
+            pocketNFT.target,  // 需要绑定的NFT的地址
+            1,
+            0,
+            "0x8129fc1c",
+        )
+        let createAccountTX = {
+            to: ERC6551Registry.target, // registry
+            data: createAccountdata.data
+        }
+        let sendTX = await deployer.sendTransaction(createAccountTX)
+        await expect(sendTX).to.be.emit(ERC6551Registry,"AccountCreated")
     })
     it("功能测试", async function() {
-        // expect(await pocketNFT.tokenID()).to.be.equal(5)
-        /**
-         *  const transferUSDT = await USDT.transfer.populateTransaction(user4.address, ethers.parseEther('10'))
-            const tx = await MultiSigWalletR.connect(user1).submitTransaction(
-                transferUSDT.to,
-                0,
-                transferUSDT.data
-            )
-         */
-        // 将自己的nft存进 6551的生成账户
-        const getAccount = await ERC6551Registry.account(
-            Account.target,
+        // 查看生成的账户是什么
+        const createdAccount = await ERC6551Registry.account(
+            AccountProxy.target,  
             chainId,
             pocketNFT.target,
             1,
-            6551
+            0,  //salt
         )
-        const Accountcontract = await ethers.getContractAt('Account', getAccount);
-        // console.log(Accountcontract);
-        await pocketNFT.transferFrom(deployer.address, getAccount, 2);
-        expect(await pocketNFT.ownerOf(2)).to.be.equal(getAccount);
-        console.log("7777777");
-        // console.log("ERC6551Registry",ERC6551Registry);
-        // console.log("pocketNFT", pocketNFT);
-        const transferNFT = await pocketNFT.safeTransferFrom.populateTransaction(getAccount, deployer.address, 2)
-        await deployer.sendTransaction({
-            to: getAccount,
-            value: parseEther("5"),
-        });
-        console.log("余额", await ethers.provider.getBalance(getAccount));
-        const executeTX = await Accountcontract.executeCall.populateTransaction(
-            pocketNFT.target,
+        const AccountContract = await ethers.getContractAt('Account', createdAccount);
+        // mint资产
+        for (let i = 0; i < 10; i++) {
+            await assetsNFT.mint();
+        }
+        // 将资产转入ERC6551抽象账户
+        for (let i = 1; i <= 10; i++) {
+            // tokenid 从1开始
+            await assetsNFT.safeTransferFrom(deployer.address, createdAccount, i);
+        }
+        expect(await assetsNFT.balanceOf(createdAccount)).to.be.equal(10)
+        // 现在将资产转出到EOA账户
+        const transferAssetsNFT = await assetsNFT.transferFrom.populateTransaction(createdAccount, deployer.address, 1)
+        const executeTX = await AccountContract.executeCall.populateTransaction(
+            assetsNFT.target,
             0,
-            transferNFT.data
+            transferAssetsNFT.data,
         )
-        await deployer.sendTransaction({
-            to: getAccount,
-            data : executeTX.data
-        })
-        console.log("executeTX.data",executeTX.data);
-        console.log("transferNFT.data",transferNFT.data);
-        expect(await pocketNFT.ownerOf(2)).to.be.equal(deployer.address);
+        let sendTX = {
+            to: createdAccount,
+            data: executeTX.data, 
+        };
+        await deployer.sendTransaction(sendTX)
+        expect(await assetsNFT.ownerOf(1)).to.be.equal(deployer.address)
+
+        // 批量操erc6551账户
+        for (let i = 2; i <= 10; i++) {
+            const transferAssetsNFT = await assetsNFT.transferFrom.populateTransaction(createdAccount, deployer.address, i)
+            const executeTX = await AccountContract.executeCall.populateTransaction(
+                assetsNFT.target,
+                0,
+                transferAssetsNFT.data,
+            )
+            let sendTX = {
+                to: createdAccount,
+                data: executeTX.data, 
+            };
+            await deployer.sendTransaction(sendTX)
+            expect(await assetsNFT.ownerOf(i)).to.be.equal(deployer.address)
+        }
     })
 })

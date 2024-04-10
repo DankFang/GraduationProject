@@ -19,8 +19,8 @@ module.exports = async ({getNamedAccounts, deployments, getChainId}) => {
         EntryPointAddr = ERC4337EntryPointAddr
     }
     let AccountGuardianAddr = (await getContract(chainId, "AccountGuardian")).target
-    console.log("EntryPointAddr",EntryPointAddr);
-    console.log("AccountGuardianAddr",AccountGuardianAddr);
+    // console.log("EntryPointAddr",EntryPointAddr);
+    // console.log("AccountGuardianAddr",AccountGuardianAddr);
     await deploy('Account', {
         salt: '0x6551655165516551655165516551655165516551655165516551655165516551',
         contract: 'Account',
