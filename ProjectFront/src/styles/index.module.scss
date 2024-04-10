@@ -1,0 +1,20 @@
+.firstBG {
+  background: url("../../public/images/profile.jpg") center repeat;
+  opacity: 0;
+  animation: bgAnima 2s ease-out forwards;
+}
+.secondBG {
+  opacity: 0;
+  background: url("../../public/images/head.png") center repeat;
+  animation: bgAnima 2s ease-out forwards;
+}
+@keyframes bgAnima {
+  from {
+    opacity: 0;
+    transform: scale(1.2);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

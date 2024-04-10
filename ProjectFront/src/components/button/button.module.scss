@@ -1,0 +1,51 @@
+.comButton {
+  position: relative;
+  cursor: pointer;
+  background: rgb(214, 128, 6);
+  margin-right: 20px;
+  button {
+    overflow: hidden;
+    display: inline-block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateY(-50%) translateX(-50%);
+  }
+  .bg1 {
+    background: rgb(214, 128, 6);
+    background-size: 100% 100%;
+  }
+  .bg2 {
+    background: rgb(214, 128, 6);
+    background-size: 100% 100%;
+  }
+  .text {
+    width: 100%;
+    top: 50%;
+    left: 0;
+    z-index: 3;
+    font-style: normal;
+    transform: translateY(-50%);
+  }
+
+  .loading {
+    font-size: 14px;
+    animation: loadingAnima 1.5s linear infinite;
+  }
+}
+
+.noBgButton {
+  .bg1,
+  .bg2 {
+    background: rgb(214, 128, 6);
+  }
+}
+
+@keyframes loadingAnima {
+  from {
+    transform: rotateZ(0);
+  }
+  to {
+    transform: rotateZ(360deg);
+  }
+}

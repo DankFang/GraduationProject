@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  background: black;
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
+}
+
+.tc {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, .3);
+  z-index: 200;
+}
+
+
+.xy-item {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+}
+
+.y-item {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.x-item {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/**
+高亮标题*/
+.lightTitle {
+  letter-spacing: 0.45em;
+  text-shadow: 0 0 11.6393px #00f3ff;
+  text-transform: uppercase;
+}
+
+/*
+随机背景图*/
+.randomBackground {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  z-index: 0;
+}
+
+.randomBackgroundIndex {
+  position: fixed;
+  z-index: -1;
+}
+
+swiper-container::part(wrapper) {
+  padding-bottom: 20px;
+}
+
+swiper-container::part(scrollbar) {
+  height: 8px;
+  background-color: #6c6c6c;
+  bottom: 0;
+  cursor: pointer;
+}
