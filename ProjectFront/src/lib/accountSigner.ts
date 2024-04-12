@@ -11,7 +11,7 @@ let contract: any;
 let iface: any;
 // polygon
 let contractAddress = "";
-const jsonRpcUrl = "https://polygon-mumbai-bor-rpc.publicnode.com";
+let jsonRpcUrl: any;
 
 /**
  *
@@ -20,10 +20,12 @@ const jsonRpcUrl = "https://polygon-mumbai-bor-rpc.publicnode.com";
  */
 export default async function getAccountContract(
   isConnected: boolean,
-  address6551: string
+  address6551: string,
+  chainId: number
 ) {
   contractAddress = address6551;
   if (provider === null && isConnected) {
+    jsonRpcUrl = chainId == 80001 ? "https://polygon-mumbai-bor-rpc.publicnode.com" : "https://ethereum-sepolia-rpc.publicnode.com"
     providerViewer = new JsonRpcProvider(jsonRpcUrl);
     contractViewer = new Contract(contractAddress, abi, providerViewer);
     provider = new BrowserProvider(window.ethereum);

@@ -22,9 +22,13 @@ let regisSigner: any = null;
 let bagContract: any = null;
 let bagContractViewer: any = null;
 let old_address: any = "";
-
+let chainId: any;
+let AccountProxy: any
+let pocketNFT: any
+let assetsNFT: any
+let registry: any
 // 链ID
-const chainId = 80001;
+// const chainId = 80001;
 
 export default function Mint() {
   const [bundleTokenid, setBundleTokenid] = useState("");
@@ -43,16 +47,28 @@ export default function Mint() {
       // assets合约
       geteEthersObject(isConnected).then((res) => {
         contract = res.contract;
+        chainId = res.chainId1;
+        console.log(chainId == 80001);
+        
+        console.log("chainId", chainId);
+        AccountProxy = chainId == 80001 ? "0xA477e898B403f00cB41f760D83282fb20545Edc5" : "0x44B3fdC704632424D92c1b64ff621be514513dE8"
+        pocketNFT = chainId == 80001 ? "0x6eeE674Df9D3adA4e73599E9ec68CFe897d197b3" : "0xF2085520559dE812ca76e64a6805F776F2976D32"
+        assetsNFT = chainId == 80001 ? "0x25C0D1Cb7851aa1D7DcB550e835949bcfdc69CF5" : "0x51d054C73E767B72C5bAbc79eACc85cFd3cc6f8a"
+        registry = chainId == 80001 ? "0xf713E1bFc2a7235765C5afc668720d58024404b1" : "0x68b7649d9d24B40F04e71495b8c594C5B58735e5"
+        console.log("assetsNFT",assetsNFT)
+        console.log("pocketNFT", pocketNFT);
+        console.log("registry", registry);
+        
       });
 
-      // assets合约
-      getRegistryContract(isConnected).then((res) => {
+      // regis合约
+      getRegistryContract(isConnected, chainId).then((res) => {
         regisContract = res.contract;
         regisSigner = res.signer;
       });
 
       // 注册proket实例
-      getBatContract(isConnected).then((res) => {
+      getBatContract(isConnected, chainId).then((res) => {
         bagContract = res.contract;
         bagContractViewer = res.contractViewer;
       });
@@ -88,9 +104,9 @@ export default function Mint() {
 
     // 查看生成的账户是什么
     const createdAccount = await regisContract.createAccount.staticCall(
-      "0xA477e898B403f00cB41f760D83282fb20545Edc5", // Account的proxy
+      AccountProxy, // Account的proxy
       chainId,
-      "0x6eeE674Df9D3adA4e73599E9ec68CFe897d197b3", // 需要绑定的NFT的地址
+      pocketNFT, // 需要绑定的NFT的地址
       bundleTokenid,
       0,
       "0x8129fc1c"
@@ -103,11 +119,11 @@ export default function Mint() {
     );
 
     // 注册account合约
-    const contractObj = await getAccountContract(isConnected, createdAccount);
+    const contractObj = await getAccountContract(isConnected, createdAccount, chainId);
     const AccountContract = contractObj.contract;
 
     const executeTX = await AccountContract.executeCall.populateTransaction(
-      "0x25C0D1Cb7851aa1D7DcB550e835949bcfdc69CF5",
+      assetsNFT,
       0,
       transferAssetsNFT.data
       // { gasLimit: 1000000 , gasPrice: 3000000000}
@@ -170,23 +186,23 @@ export default function Mint() {
     try {
       const createAccountdata =
         await regisContract.createAccount.populateTransaction(
-          "0xA477e898B403f00cB41f760D83282fb20545Edc5", // Account的proxy
+          AccountProxy, // Account的proxy
           chainId,
-          "0x6eeE674Df9D3adA4e73599E9ec68CFe897d197b3", // 需要绑定的NFT的地址
+          pocketNFT, // 需要绑定的NFT的地址
           bundleTokenid,
           0,
           "0x8129fc1c"
         );
       let createAccountTX = {
-        to: "0xf713E1bFc2a7235765C5afc668720d58024404b1", // registry
+        to: registry, // registry
         data: createAccountdata.data
       };
       await regisSigner.sendTransaction(createAccountTX);
 
       const createdAccount1 = await regisContract.createAccount.staticCall(
-        "0xA477e898B403f00cB41f760D83282fb20545Edc5", // Account的proxy
+        AccountProxy, // Account的proxy
         chainId,
-        "0x6eeE674Df9D3adA4e73599E9ec68CFe897d197b3", // 需要绑定的NFT的地址
+        pocketNFT, // 需要绑定的NFT的地址
         bundleTokenid,
         0,
         "0x8129fc1c"
@@ -244,8 +260,9 @@ export default function Mint() {
           {/** 钱包地址 */}
           <div className={`${eoaAddress !== "" ? "block" : "hidden"}`}>
             EOA address: {eoaAddress}
+            chainId: {chainId}
             <div className="mb-3">
-              bundle token id：
+              bundle token id:
               <input
                 className=" text-black border"
                 type="number"
@@ -264,7 +281,7 @@ export default function Mint() {
               <div className="my-3">createdAccount: {account6551account}</div>{" "}
               {/** 输入转入的tokenid */}
               <div className=" my-3">
-                转入的tokenId：
+                转入的tokenId:
                 <input
                   className=" text-black border"
                   type="number"
@@ -277,7 +294,7 @@ export default function Mint() {
               </div>
               {/** 输入转出的tokenid */}
               <div className="mb-3">
-                转出的tokenId：
+                转出的tokenId:
                 <input
                   className=" text-black border"
                   type="number"

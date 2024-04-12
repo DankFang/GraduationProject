@@ -97,6 +97,7 @@ function BarButton({
  * 链接web3钱包的按钮
  * geoli是5
  * sepolia测试链是11155111
+ * mumbai是 80001
  */
 // const chainId = 11155111;
 function WalletButton() {
