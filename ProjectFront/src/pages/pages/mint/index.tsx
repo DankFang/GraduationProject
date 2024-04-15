@@ -48,17 +48,10 @@ export default function Mint() {
       geteEthersObject(isConnected).then((res) => {
         contract = res.contract;
         chainId = res.chainId1;
-        console.log(chainId == 80001);
-        
-        console.log("chainId", chainId);
         AccountProxy = chainId == 80001 ? "0xA477e898B403f00cB41f760D83282fb20545Edc5" : "0x44B3fdC704632424D92c1b64ff621be514513dE8"
         pocketNFT = chainId == 80001 ? "0x6eeE674Df9D3adA4e73599E9ec68CFe897d197b3" : "0xF2085520559dE812ca76e64a6805F776F2976D32"
         assetsNFT = chainId == 80001 ? "0x25C0D1Cb7851aa1D7DcB550e835949bcfdc69CF5" : "0x51d054C73E767B72C5bAbc79eACc85cFd3cc6f8a"
         registry = chainId == 80001 ? "0xf713E1bFc2a7235765C5afc668720d58024404b1" : "0x68b7649d9d24B40F04e71495b8c594C5B58735e5"
-        console.log("assetsNFT",assetsNFT)
-        console.log("pocketNFT", pocketNFT);
-        console.log("registry", registry);
-        
       });
 
       // regis合约
@@ -81,6 +74,8 @@ export default function Mint() {
 
   /**接受input的值 */
   function handleInput(e: any, type: string) {
+    console.log(e);
+    
     if (type === "in") {
       setInTokenid(e.target.value as string);
     } else if (type === "out") {
@@ -180,7 +175,7 @@ export default function Mint() {
     }
   }
 
-  /**创建背包后，再创建6551账户并转入1个matic 再更新用户数据*/
+  /**create 6551 account*/
   async function create6551() {
     console.log("开始创建6551");
     try {
@@ -250,19 +245,18 @@ export default function Mint() {
   }
 
   return (
-    <div
-      className={`${style.mainBk} relative mx-auto mint min-h-screen bg-white text-black`}
-    >
+    <div className={`${style.mainBk} relative mx-auto mint min-h-screen bg-white text-black`}>
       {/** 主体内容 */}
       <div className="relative z-1 h-full justify-between pt-[3%] pl-[3%]">
         {/**左侧 */}
         <div className="leftArea">
           {/** 钱包地址 */}
-          <div className={`${eoaAddress !== "" ? "block" : "hidden"}`}>
+          <div className={`${eoaAddress !== "" ? "block" : "hidden"}`} style={{ fontSize: 'larger' }}>
             EOA address: {eoaAddress}
-            chainId: {chainId}
+            <br/>
+            <br/>
             <div className="mb-3">
-              bundle token id:
+              与ERC-6551抽象账户绑定的pocketNFT的tokenID:
               <input
                 className=" text-black border"
                 type="number"
@@ -274,14 +268,16 @@ export default function Mint() {
               />
             </div>
           </div>
-
+          
+          <br/>
           {/** 生成的6551地址 */}
           {account6551account !== "" ? (
             <>
-              <div className="my-3">createdAccount: {account6551account}</div>{" "}
-              {/** 输入转入的tokenid */}
-              <div className=" my-3">
-                转入的tokenId:
+              <div className="my-3" style={{ fontSize: 'larger' }}>createdAccount: {account6551account}</div>
+              <br/>
+              {/** 输入转入的assets tokenid */}
+              <div className=" my-3" style={{ fontSize: 'larger' }}>
+                转入的assets tokenId:
                 <input
                   className=" text-black border"
                   type="number"
@@ -293,24 +289,25 @@ export default function Mint() {
                 />
               </div>
               {/** 输入转出的tokenid */}
-              <div className="mb-3">
-                转出的tokenId:
-                <input
-                  className=" text-black border"
-                  type="number"
-                  name=""
-                  id=""
-                  onInput={(e) => {
-                    handleInput(e, "out");
-                  }}
-                />
+              <br/>
+              <div className="mb-3" style={{ fontSize: 'larger' }}>
+                  转出的assets tokenId:
+                  <input
+                      className="text-black border"
+                      type="number"
+                      name=""
+                      id=""
+                      onInput={(e) => {
+                          handleInput(e, "out");
+                      }}
+                  />
               </div>
             </>
           ) : null}
 
           {/**按钮 */}
           <ComButton
-            text="createAccount"
+            text="创建抽象账户"
             cancel
             loading={loading}
             fontBold
@@ -326,7 +323,7 @@ export default function Mint() {
           ></ComButton>
 
           <ComButton
-            text="转进6551"
+            text="将assetsNFT转进抽象账户"
             cancel
             fontBold
             loading={loading}
@@ -334,15 +331,16 @@ export default function Mint() {
           ></ComButton>
 
           <ComButton
-            text="转出6551"
+            text="将assetsNFT转出抽象账户"
             cancel
             fontBold
+            // buttonSize="big"
             loading={loading}
             onClickButton={executeCall}
           ></ComButton>
 
           <ComButton
-            text="查询资产"
+            text="查询抽象账户内的资产"
             cancel
             fontBold
             loading={loading}
@@ -356,7 +354,7 @@ export default function Mint() {
             account6551account !== "" ? "block" : "hidden"
           } text-center text-[30px] font-bold mt-2 mb-1`}
         >
-          资产总数：{assetsNumber}
+          抽象账户内资产总数：{assetsNumber}
         </div>
         <div
           className={`border rounded-sm h-[500px] p-2 overflow-y-scroll ${
