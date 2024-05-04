@@ -23,10 +23,10 @@ let bagContract: any = null;
 let bagContractViewer: any = null;
 let old_address: any = "";
 let chainId: any;
-let AccountProxy: any
-let pocketNFT: any
-let assetsNFT: any
-let registry: any
+let AccountProxy: any;
+let pocketNFT: any;
+let assetsNFT: any;
+let registry: any;
 // 链ID
 // const chainId = 80001;
 
@@ -34,9 +34,13 @@ export default function Mint() {
   const [bundleTokenid, setBundleTokenid] = useState("");
   const [inTokenid, setInTokenid] = useState("");
   const [outTokenid, setOutTokenid] = useState("");
+  const [liudongTokenid, setLiudongTokenid] = useState("");
+  const [transPackAddress, setTransPackAddress] = useState("");
   const [eoaAddress, setEoaAddress] = useState("");
   const [assetsNumber, setAssetsNumber] = useState(0);
   const [assetsIds, setAssetsIds] = useState<Array<{ id: number }>>([]);
+  const [liudong, setLiudong] = useState<Array<{ text: string }>>([]);
+  const [packOnwer, setPackOnwer] = useState<Array<{ text: string }>>([]);
   const [account6551account, setAccount6551account] = useState("");
   const { isConnected, address } = useAccount();
   old_address = address;
@@ -48,10 +52,22 @@ export default function Mint() {
       geteEthersObject(isConnected).then((res) => {
         contract = res.contract;
         chainId = res.chainId1;
-        AccountProxy = chainId == 80001 ? "0xA477e898B403f00cB41f760D83282fb20545Edc5" : "0x44B3fdC704632424D92c1b64ff621be514513dE8"
-        pocketNFT = chainId == 80001 ? "0x6eeE674Df9D3adA4e73599E9ec68CFe897d197b3" : "0xF2085520559dE812ca76e64a6805F776F2976D32"
-        assetsNFT = chainId == 80001 ? "0x25C0D1Cb7851aa1D7DcB550e835949bcfdc69CF5" : "0x51d054C73E767B72C5bAbc79eACc85cFd3cc6f8a"
-        registry = chainId == 80001 ? "0xf713E1bFc2a7235765C5afc668720d58024404b1" : "0x68b7649d9d24B40F04e71495b8c594C5B58735e5"
+        AccountProxy =
+          chainId == 80001
+            ? "0xA477e898B403f00cB41f760D83282fb20545Edc5"
+            : "0x44B3fdC704632424D92c1b64ff621be514513dE8";
+        pocketNFT =
+          chainId == 80001
+            ? "0x6eeE674Df9D3adA4e73599E9ec68CFe897d197b3"
+            : "0xF2085520559dE812ca76e64a6805F776F2976D32";
+        assetsNFT =
+          chainId == 80001
+            ? "0x25C0D1Cb7851aa1D7DcB550e835949bcfdc69CF5"
+            : "0x51d054C73E767B72C5bAbc79eACc85cFd3cc6f8a";
+        registry =
+          chainId == 80001
+            ? "0xf713E1bFc2a7235765C5afc668720d58024404b1"
+            : "0x68b7649d9d24B40F04e71495b8c594C5B58735e5";
       });
 
       // regis合约
@@ -75,13 +91,17 @@ export default function Mint() {
   /**接受input的值 */
   function handleInput(e: any, type: string) {
     console.log(e);
-    
+
     if (type === "in") {
       setInTokenid(e.target.value as string);
     } else if (type === "out") {
       setOutTokenid(e.target.value as string);
     } else if (type === "bundle") {
       setBundleTokenid(e.target.value as string);
+    } else if (type === "liudong") {
+      setLiudongTokenid(e.target.value as string);
+    } else if (type === "transPack") {
+      setTransPackAddress(e.target.value as string);
     }
   }
 
@@ -114,7 +134,11 @@ export default function Mint() {
     );
 
     // 注册account合约
-    const contractObj = await getAccountContract(isConnected, createdAccount, chainId);
+    const contractObj = await getAccountContract(
+      isConnected,
+      createdAccount,
+      chainId
+    );
     const AccountContract = contractObj.contract;
 
     const executeTX = await AccountContract.executeCall.populateTransaction(
@@ -244,17 +268,59 @@ export default function Mint() {
     }
   }
 
+  /**查询资产流动性 */
+  async function getLiudong() {
+    if (!address || liudongTokenid === "") return;
+    const nft_owner = await contract.ownerOf(liudongTokenid);
+    // 设置流动性列表
+    setLiudong((prev) => [
+      ...prev,
+      { text: `id:${liudongTokenid} owner:${nft_owner}` }
+    ]);
+  }
+
+  /**查询抽象账户所有者 */
+  async function getPackOwner() {
+    if (!address) return;
+
+    const owner = await bagContract.ownerOf(bundleTokenid);
+    setPackOnwer((prev) => [...prev, { text: `owner:${owner}` }]);
+  }
+
+  /**转移抽象账户 */
+  async function transPack() {
+    if (account6551account === "") {
+      alert("请先创建账户");
+      return;
+    }
+    if (bundleTokenid === "" || transPackAddress === "") {
+      return;
+    }
+    setLoading(true);
+    await bagContract.safeTransferFrom(
+      address,
+      transPackAddress,
+      bundleTokenid
+    );
+    setLoading(false);
+  }
+
   return (
-    <div className={`${style.mainBk} relative mx-auto mint min-h-screen bg-white text-black`}>
+    <div
+      className={`${style.mainBk} relative mx-auto mint min-h-screen bg-white text-black`}
+    >
       {/** 主体内容 */}
       <div className="relative z-1 h-full justify-between pt-[3%] pl-[3%]">
         {/**左侧 */}
         <div className="leftArea">
           {/** 钱包地址 */}
-          <div className={`${eoaAddress !== "" ? "block" : "hidden"}`} style={{ fontSize: 'larger' }}>
+          <div
+            className={`${eoaAddress !== "" ? "block" : "hidden"}`}
+            style={{ fontSize: "larger" }}
+          >
             EOA address: {eoaAddress}
-            <br/>
-            <br/>
+            <br />
+            <br />
             <div className="mb-3">
               与ERC-6551抽象账户绑定的pocketNFT的tokenID:
               <input
@@ -268,15 +334,17 @@ export default function Mint() {
               />
             </div>
           </div>
-          
-          <br/>
+
+          <br />
           {/** 生成的6551地址 */}
           {account6551account !== "" ? (
             <>
-              <div className="my-3" style={{ fontSize: 'larger' }}>createdAccount: {account6551account}</div>
-              <br/>
+              <div className="my-3" style={{ fontSize: "larger" }}>
+                createdAccount: {account6551account}
+              </div>
+              <br />
               {/** 输入转入的assets tokenid */}
-              <div className=" my-3" style={{ fontSize: 'larger' }}>
+              <div className=" my-3" style={{ fontSize: "larger" }}>
                 转入的assets tokenId:
                 <input
                   className=" text-black border"
@@ -289,18 +357,45 @@ export default function Mint() {
                 />
               </div>
               {/** 输入转出的tokenid */}
-              <br/>
-              <div className="mb-3" style={{ fontSize: 'larger' }}>
-                  转出的assets tokenId:
-                  <input
-                      className="text-black border"
-                      type="number"
-                      name=""
-                      id=""
-                      onInput={(e) => {
-                          handleInput(e, "out");
-                      }}
-                  />
+              <br />
+              <div className="mb-3" style={{ fontSize: "larger" }}>
+                转出的assets tokenId:
+                <input
+                  className="text-black border"
+                  type="number"
+                  name=""
+                  id=""
+                  onInput={(e) => {
+                    handleInput(e, "out");
+                  }}
+                />
+              </div>
+              <br />
+              {/**需要查询流动性的nft ID */}
+              <div className="mb-3" style={{ fontSize: "larger" }}>
+                需要查询流动性的assets tokenId:
+                <input
+                  className="text-black border"
+                  type="number"
+                  name=""
+                  id=""
+                  onInput={(e) => {
+                    handleInput(e, "liudong");
+                  }}
+                />
+              </div>
+              <br />
+              {/**输入接受pack nft 的接受地址 */}
+              <div className="mb-3" style={{ fontSize: "larger" }}>
+                接受抽象账户转移的地址:
+                <input
+                  className="text-black border"
+                  name=""
+                  id=""
+                  onInput={(e) => {
+                    handleInput(e, "transPack");
+                  }}
+                />
               </div>
             </>
           ) : null}
@@ -346,28 +441,105 @@ export default function Mint() {
             loading={loading}
             onClickButton={getAssets}
           ></ComButton>
+
+          <ComButton
+            text="查询资产流动性说明"
+            cancel
+            fontBold
+            loading={loading}
+            onClickButton={getLiudong}
+          ></ComButton>
+
+          <ComButton
+            text="转移抽象账户"
+            cancel
+            fontBold
+            loading={loading}
+            onClickButton={transPack}
+          ></ComButton>
+
+          <ComButton
+            text="抽象账户所有者变化情况"
+            cancel
+            fontBold
+            loading={loading}
+            onClickButton={getPackOwner}
+          ></ComButton>
         </div>
 
         {/**6551拥有的assets */}
-        <div
-          className={`${
-            account6551account !== "" ? "block" : "hidden"
-          } text-center text-[30px] font-bold mt-2 mb-1`}
-        >
-          抽象账户内资产总数：{assetsNumber}
-        </div>
-        <div
-          className={`border rounded-sm h-[500px] p-2 overflow-y-scroll ${
-            account6551account !== "" ? "block" : "hidden"
-          }`}
-        >
-          {assetsIds.map((e) => {
-            return (
-              <p className="text-center" key={e.id}>
-                assets token id: {e.id}
-              </p>
-            );
-          })}
+        <div className="flex justify-between pb-7">
+          {/**抽象账户内资产总数 */}
+          <div className="w-[30%]">
+            <div
+              className={`${
+                account6551account !== "" ? "block" : "hidden"
+              } text-center text-[30px] font-bold mt-2 mb-1`}
+            >
+              抽象账户内资产总数：{assetsNumber}
+            </div>
+            <div
+              className={`border rounded-sm h-[500px] p-2 overflow-y-scroll ${
+                account6551account !== "" ? "block" : "hidden"
+              }`}
+            >
+              {assetsIds.map((e) => {
+                return (
+                  <p className="text-center" key={e.id}>
+                    assets token id: {e.id}
+                  </p>
+                );
+              })}
+            </div>
+          </div>
+
+          {/**资产流动性说明 */}
+          <div className="w-[30%]">
+            <div
+              className={`${
+                account6551account !== "" ? "block" : "hidden"
+              } text-center text-[30px] font-bold mt-2 mb-1`}
+            >
+              资产流动性说明
+            </div>
+            <div
+              className={`border rounded-sm h-[500px] p-2 overflow-y-scroll ${
+                account6551account !== "" ? "block" : "hidden"
+              }`}
+            >
+              {liudong.map((e, i) => {
+                return (
+                  <p className="text-center" key={i}>
+                    {e.text}
+                  </p>
+                );
+              })}
+            </div>
+          </div>
+
+          {/**抽象账户所有者变化情况 */}
+          <div className="w-[30%]">
+            <div
+              className={`${
+                account6551account !== "" ? "block" : "hidden"
+              } text-center text-[30px] font-bold mt-2 mb-1`}
+            >
+              抽象账户所有者变化情况
+            </div>
+            <div
+              className={`border rounded-sm h-[500px] p-2 overflow-y-scroll ${
+                account6551account !== "" ? "block" : "hidden"
+              }`}
+            >
+              {packOnwer.map((e, i) => {
+                return (
+                  <p className="text-center" key={i}>
+                    {e.text}
+                  </p>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </div>
